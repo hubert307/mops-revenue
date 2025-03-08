@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>月營收查詢</title>
+</head>
+<body>
+  <h2>查詢結果</h2>
+  <pre id="result">正在查詢...</pre>
+  <script>
+    // 從 URL 獲取參數
+    const urlParams = new URLSearchParams(window.location.search);
+    const companyId = urlParams.get('co_id') || '3293';
+    const year = urlParams.get('year') || '114';
+    const month = urlParams.get('month') || '02';
+
+    // 發送 API 請求
+    fetch('https://mops.twse.com.tw/mops/api/t05st10_ifrs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        companyId: companyId,
+        dataType: "1",
+        year: year,
+        month: month,
+        subsidiaryCompanyId: ""
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.code === 200) {
+        const result = data.result;
+        document.getElementById('result').textContent = `
+          公司代號: ${result.companyId}
+          公司名稱: ${result.companyName || '未知'}
+          年份: ${result.year}
+          月份: ${result.month}
+          月營收: ${result.revenue || '無數據'} 元
+        `;
+      } else {
+        document.getElementById('result').textContent = `查詢失敗: ${data.message}`;
+      }
+    })
+    .catch(error => {
+      document.getElementById('result').textContent = '錯誤: ' + error.message;
+    });
+  </script>
+</body>
+</html>
